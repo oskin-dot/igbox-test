@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>IGBOX — Gemini Image Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: #0a0a0f; color: #f0f0f5;
+    min-height: 100vh; display: flex;
+    align-items: flex-start; justify-content: center; padding: 24px;
+  }
+  .card {
+    background: #111118; border: 1px solid #2a2a38;
+    border-radius: 20px; padding: 36px;
+    width: 100%; max-width: 640px; margin-top: 24px;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .dot { width: 8px; height: 8px; background: #c8ff00; border-radius: 50%; box-shadow: 0 0 12px #c8ff00; }
+  .subtitle { font-size: 12px; color: #6b6b80; margin-bottom: 28px; font-family: 'JetBrains Mono', monospace; }
+  label { display: block; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #6b6b80; margin-bottom: 6px; letter-spacing: 0.5px; }
+  input, textarea, select {
+    width: 100%; background: #17171f; border: 1px solid #2a2a38;
+    border-radius: 10px; padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    color: #f0f0f5; outline: none; margin-bottom: 16px; transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: #c8ff00; }
+  input::placeholder { color: #3a3a50; }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; font-size: 12px; }
+  select option { background: #17171f; }
+  .key-wrap { position: relative; }
+  .key-wrap input { padding-right: 80px; }
+  .toggle-vis { position: absolute; right: 12px; top: 10px; font-size: 11px; color: #6b6b80; cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 600; }
+  .toggle-vis:hover { color: #c8ff00; }
+  .model-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
+  .model-tab {
+    padding: 8px 6px; background: #17171f; border: 1px solid #2a2a38;
+    border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 11px;
+    font-weight: 700; color: #6b6b80; cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .model-tab:hover { border-color: #c8ff00; color: #f0f0f5; }
+  .model-tab.active { background: rgba(200,255,0,0.1); border-color: #c8ff00; color: #c8ff00; }
+  .model-tab .price { font-size: 10px; color: #6b6b80; margin-top: 2px; font-weight: 400; }
+  .model-tab.active .price { color: rgba(200,255,0,0.6); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .divider { border: none; border-top: 1px solid #2a2a38; margin: 20px 0; }
+  .btn {
+    width: 100%; padding: 14px; background: #c8ff00; border: none; border-radius: 10px;
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; color: #000;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(200,255,0,0.25); }
+  .btn:disabled { background: #2a2a38; color: #6b6b80; transform: none; box-shadow: none; cursor: not-allowed; }
+  .spinner { width: 16px; height: 16px; border: 2px solid #3a3a50; border-top-color: #c8ff00; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .cost-hint { text-align: center; font-size: 11px; color: #6b6b80; margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
+  .cost-hint span { color: #c8ff00; }
+  .results { margin-top: 24px; display: none; }
+  .img-wrap { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid #2a2a38; margin-bottom: 10px; transition: border-color 0.2s; }
+  .img-wrap:hover { border-color: #c8ff00; }
+  .img-wrap img { width: 100%; display: block; }
+  .img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.2s; }
+  .img-wrap:hover .img-overlay { opacity: 1; }
+  .ov-btn { padding: 7px 14px; border-radius: 7px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; }
+  .ov-btn.dl { background: #c8ff00; color: #000; }
+  .result-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+  .result-meta { font-size: 11px; color: #6b6b80; font-family: 'JetBrains Mono', monospace; }
+  .dl-all { padding: 7px 16px; background: #17171f; border: 1px solid #c8ff00; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: #c8ff00; cursor: pointer; transition: all 0.15s; }
+  .dl-all:hover { background: rgba(200,255,0,0.1); }
+  .success-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; color: #00e5a0; margin-bottom: 14px; }
+  .error-box { background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.25); border-radius: 10px; padding: 14px 16px; margin-top: 16px; font-size: 12px; color: #ff8080; font-family: 'JetBrains Mono', monospace; line-height: 1.7; display: none; }
+  .ref-zone { border: 2px dashed #2a2a38; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; position: relative; }
+  .ref-zone:hover { border-color: #c8ff00; background: rgba(200,255,0,0.03); }
+  .ref-zone.has-image { border-color: #00e5a0; border-style: solid; }
+  .ref-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; margin: 0; }
+  .ref-preview { width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px; display: none; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .toggle-label { font-size: 12px; color: #6b6b80; font-family: 'JetBrains Mono', monospace; }
+  .toggle { width: 36px; height: 20px; background: #2a2a38; border-radius: 20px; position: relative; cursor: pointer; transition: background 0.2s; }
+  .toggle.on { background: #c8ff00; }
+  .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; }
+  .toggle.on::after { left: 19px; }
+  .ref-section { display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><div class="dot"></div>IGBOX <span style="color:#6b6b80;font-weight:400;font-size:14px;margin-left:4px">/ Image Test</span></div>
+  <div class="subtitle">gemini-3.1-flash-image vs gemini-3-pro-image</div>
+
+  <label>API КЛЮЧ</label>
+  <div class="key-wrap">
+    <input type="password" id="apiKey" placeholder="AIzaSy...">
+    <span class="toggle-vis" onclick="toggleKey()">показать</span>
+  </div>
+
+  <label>МОДЕЛЬ</label>
+  <div class="model-tabs">
+    <div class="model-tab" onclick="selectModel(this,'gemini-3.1-flash-image-preview')">
+      3.1 Flash<div class="price">~$0.067</div>
+    </div>
+    <div class="model-tab active" onclick="selectModel(this,'gemini-3-pro-image-preview')">
+      3 Pro ⭐<div class="price">~$0.134</div>
+    </div>
+    <div class="model-tab" onclick="selectModel(this,'gemini-2.5-flash-image')">
+      2.5 Flash<div class="price">~$0.039</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <label>ПРОМПТ</label>
+  <textarea id="prompt">Create a professional iGaming banner. Dark luxury casino atmosphere. Golden coins and chips scattered elegantly. Dramatic cinematic lighting with deep shadows and neon accents. Rich jewel tones — deep purple, gold, emerald. No text, no watermarks. Ultra high quality advertising creative. Photorealistic.</textarea>
+
+  <label>NEGATIVE (что исключить)</label>
+  <textarea id="negative" style="min-height:50px">blurry, low quality, watermark, text, letters, words, cartoon</textarea>
+
+  <div class="row">
+    <div>
+      <label>СООТНОШЕНИЕ СТОРОН</label>
+      <select id="ratio">
+        <option value="16:9">16:9 — баннер</option>
+        <option value="1:1">1:1 — квадрат</option>
+        <option value="9:16">9:16 — сторис</option>
+      </select>
+    </div>
+    <div>
+      <label>КОЛИЧЕСТВО</label>
+      <select id="count" onchange="updateCost()">
+        <option value="1">1 картинка</option>
+        <option value="2">2 варианта</option>
+        <option value="4">4 варианта</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="toggle-row">
+    <div class="toggle-label">📎 Референс-изображение</div>
+    <div class="toggle" id="refToggle" onclick="toggleRef()"></div>
+  </div>
+  <div class="ref-section" id="refSection">
+    <div class="ref-zone" id="refZone">
+      <input type="file" accept="image/*" onchange="handleRefImage(event)">
+      <img class="ref-preview" id="refPreview">
+      <div id="refPlaceholder">
+        <div style="font-size:24px;margin-bottom:6px">🖼</div>
+        <div style="font-size:12px;color:#6b6b80">Загрузи референс — AI скопирует стиль</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn" id="genBtn" onclick="generate()">🎨 Генерировать</button>
+  <div class="cost-hint">Модель: <span id="modelLabel">gemini-3-pro-image-preview</span> · ~<span id="costEst">$0.13</span></div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="results" id="results">
+    <hr class="divider">
+    <div class="success-badge" id="successBadge">✅ Готово!</div>
+    <div id="imgGrid"></div>
+    <div class="result-footer">
+      <div class="result-meta" id="resultMeta"></div>
+      <button class="dl-all" onclick="downloadAll()">⬇ Скачать всё</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentModel = 'gemini-3-pro-image-preview';
+  let refImageBase64 = null;
+  let refMimeType = null;
+  let generatedImages = [];
+  const modelPrices = {
+    'gemini-3.1-flash-image-preview': 0.067,
+    'gemini-3-pro-image-preview': 0.134,
+    'gemini-2.5-flash-image': 0.039,
+  };
+
+  function toggleKey() {
+    const inp = document.getElementById('apiKey');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    event.target.textContent = inp.type === 'password' ? 'показать' : 'скрыть';
+  }
+
+  function selectModel(el, model) {
+    document.querySelectorAll('.model-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentModel = model;
+    document.getElementById('modelLabel').textContent = model;
+    updateCost();
+  }
+
+  function updateCost() {
+    const count = parseInt(document.getElementById('count').value);
+    const price = modelPrices[currentModel] || 0.134;
+    document.getElementById('costEst').textContent = '$' + (count * price).toFixed(3);
+  }
+
+  function toggleRef() {
+    const t = document.getElementById('refToggle');
+    const s = document.getElementById('refSection');
+    t.classList.toggle('on');
+    s.style.display = t.classList.contains('on') ? 'block' : 'none';
+  }
+
+  function handleRefImage(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    refMimeType = file.type;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      refImageBase64 = ev.target.result.split(',')[1];
+      const preview = document.getElementById('refPreview');
+      preview.src = ev.target.result;
+      preview.style.display = 'block';
+      document.getElementById('refPlaceholder').style.display = 'none';
+      document.getElementById('refZone').classList.add('has-image');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function generate() {
+    const key = document.getElementById('apiKey').value.trim();
+    const prompt = document.getElementById('prompt').value.trim();
+    const negative = document.getElementById('negative').value.trim();
+    const ratio = document.getElementById('ratio').value;
+    const count = parseInt(document.getElementById('count').value);
+
+    if (!key || !key.startsWith('AIza')) { showError('Введи корректный API ключ'); return; }
+    if (!prompt) { showError('Введи промпт'); return; }
+
+    const btn = document.getElementById('genBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Генерирую...';
+    hideError();
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('imgGrid').innerHTML = '';
+    generatedImages = [];
+
+    try {
+      const body = { apiKey: key, model: currentModel, prompt, negative, ratio, count };
+      if (refImageBase64 && document.getElementById('refToggle').classList.contains('on')) {
+        body.referenceImage = refImageBase64;
+        body.referenceMimeType = refMimeType;
+      }
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка сервера');
+
+      generatedImages = data.images;
+      showResults(data.images, ratio);
+
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🎨 Генерировать';
+    }
+  }
+
+  function showResults(images, ratio) {
+    const grid = document.getElementById('imgGrid');
+    grid.innerHTML = '';
+    images.forEach((img, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'img-wrap';
+      const src = `data:${img.mimeType};base64,${img.data}`;
+      wrap.innerHTML = `<img src="${src}"><div class="img-overlay"><button class="ov-btn dl" onclick="downloadOne(${i})">⬇ Скачать</button></div>`;
+      grid.appendChild(wrap);
+    });
+    document.getElementById('successBadge').textContent = `✅ ${images.length} изображений · ${currentModel}`;
+    document.getElementById('resultMeta').textContent = `${ratio} · ${images.length} шт · ~$${(images.length * (modelPrices[currentModel]||0.134)).toFixed(3)}`;
+    document.getElementById('results').style.display = 'block';
+  }
+
+  function downloadOne(i) {
+    const img = generatedImages[i];
+    const a = document.createElement('a');
+    a.href = `data:${img.mimeType};base64,${img.data}`;
+    a.download = `igbox-${currentModel}-${i+1}.png`;
+    a.click();
+  }
+
+  function downloadAll() { generatedImages.forEach((_, i) => downloadOne(i)); }
+  function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = '❌ ' + msg; b.style.display = 'block'; }
+  function hideError() { document.getElementById('errorBox').style.display = 'none'; }
+  updateCost();
+</script>
+</body>
+</html>
