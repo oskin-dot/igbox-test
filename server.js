@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Увеличиваем таймаут сервера до 5 минут
 app.use((req, res, next) => {
   req.setTimeout(300000);
   res.setTimeout(300000);
@@ -20,14 +19,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'CreoGen server running' });
 });
 
-// ─────────────────────────────────────────
-// Запрос к Gemini (generateContent)
-// ─────────────────────────────────────────
 async function callGemini(apiKey, model, parts) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 240000); // 4 мин таймаут
+  const timeout = setTimeout(() => controller.abort(), 240000);
 
   try {
     const res = await fetch(url, {
@@ -57,15 +52,11 @@ async function callGemini(apiKey, model, parts) {
       data: imagePart.inlineData.data,
       mimeType: imagePart.inlineData.mimeType || 'image/png'
     };
-
   } finally {
     clearTimeout(timeout);
   }
 }
 
-// ─────────────────────────────────────────
-// Промпты
-// ─────────────────────────────────────────
 function buildBasePrompt({ line1, line2, cta, visual }) {
   const textBlock = [
     line1 ? `  * Headline (large, bold, uppercase): "${line1}"` : '',
@@ -113,7 +104,7 @@ Keep all original text exactly as-is. Keep same style and colors. No watermarks.
 
     '1.91:1': `Adapt this advertising banner to 1.91:1 format (1200x628, Facebook/Google feed).
 Redistribute all elements compositionally correct for the new dimensions.
-Keep the horizontal layout similar to 16:9 but slightly more compact.
+Keep horizontal layout similar to 16:9 but slightly more compact.
 Keep all original text exactly as-is. Keep same style and colors. No watermarks.`,
 
     '4:3': `Adapt this advertising banner to 4:3 format (1024x768).
@@ -127,9 +118,6 @@ Keep all original text exactly as-is. Keep same style and colors. No watermarks.
   return layouts[ratio] || '';
 }
 
-// ─────────────────────────────────────────
-// ENDPOINT: Генерация всех форматов
-// ─────────────────────────────────────────
 app.post('/api/generate-all', async (req, res) => {
   const { apiKey, model, line1, line2, cta, visual } = req.body;
 
@@ -137,98 +125,52 @@ app.post('/api/generate-all', async (req, res) => {
     return res.status(400).json({ error: 'Нужны: apiKey, line1' });
   }
 
-  // SSE заголовки
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no'); // отключаем буферизацию nginx
+  res.setHeader('X-Accel-Buffering', 'no');
 
   const send = (event, data) => {
-    try {
-      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-    } catch(e) {}
+    try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch(e) {}
   };
 
-  // Keepalive пинг каждые 15 секунд чтобы Render не обрывал соединение
+  // Keepalive каждые 15 сек
   const keepalive = setInterval(() => {
-    try {
-      res.write(': keepalive\n\n');
-    } catch(e) {
-      clearInterval(keepalive);
-    }
+    try { res.write(': keepalive\n\n'); } catch(e) { clearInterval(keepalive); }
   }, 15000);
 
   const selectedModel = model || 'gemini-3.1-flash-image-preview';
+  const RESIZE_RATIOS = ['1:1', '9:16', '1.91:1', '4:3', '3:4'];
 
   try {
     // ── Шаг 1: базовый 16:9 ──
-    send('progress', { step: 1, total: 6, message: 'Генерирую базовый 16:9...' });
+    send('progress', { step: 1, total: 2, message: 'Генерирую базовый баннер 16:9...' });
 
     const baseImage = await callGemini(apiKey, selectedModel, [
       { text: buildBasePrompt({ line1, line2, cta, visual }) }
     ]);
 
     send('image', { ratio: '16:9', image: baseImage });
-    send('progress', { step: 2, total: 6, message: 'Адаптирую 1:1...' });
+    send('progress', { step: 2, total: 2, message: 'Адаптирую все форматы параллельно...' });
 
-    // ── Шаг 2: 1:1 ──
-    try {
-      const square = await callGemini(apiKey, selectedModel, [
-        { inlineData: { mimeType: baseImage.mimeType, data: baseImage.data } },
-        { text: buildResizePrompt('1:1') }
-      ]);
-      send('image', { ratio: '1:1', image: square });
-    } catch(e) {
-      send('error', { ratio: '1:1', message: e.message });
-    }
-
-    send('progress', { step: 3, total: 6, message: 'Адаптирую 9:16...' });
-
-    // ── Шаг 3: 9:16 ──
-    try {
-      const vertical = await callGemini(apiKey, selectedModel, [
-        { inlineData: { mimeType: baseImage.mimeType, data: baseImage.data } },
-        { text: buildResizePrompt('9:16') }
-      ]);
-      send('image', { ratio: '9:16', image: vertical });
-    } catch(e) {
-      send('error', { ratio: '9:16', message: e.message });
-    }
-
-    send('progress', { step: 4, total: 6, message: 'Адаптирую 1.91:1...' });
-
-    // ── Шаг 4: 1.91:1 ──
-    try {
-      const feed = await callGemini(apiKey, selectedModel, [
-        { inlineData: { mimeType: baseImage.mimeType, data: baseImage.data } },
-        { text: buildResizePrompt('1.91:1') }
-      ]);
-      send('image', { ratio: '1.91:1', image: feed });
-    } catch(e) {
-      send('error', { ratio: '1.91:1', message: e.message });
-    }
-
-    send('progress', { step: 5, total: 6, message: 'Адаптирую 4:3 и 3:4...' });
-
-    // ── Шаг 5: 4:3 и 3:4 параллельно ──
-    const [landscape43, portrait34] = await Promise.allSettled([
+    // ── Шаг 2: все адаптации ПАРАЛЛЕЛЬНО ──
+    const resizePromises = RESIZE_RATIOS.map(ratio =>
       callGemini(apiKey, selectedModel, [
         { inlineData: { mimeType: baseImage.mimeType, data: baseImage.data } },
-        { text: buildResizePrompt('4:3') }
-      ]),
-      callGemini(apiKey, selectedModel, [
-        { inlineData: { mimeType: baseImage.mimeType, data: baseImage.data } },
-        { text: buildResizePrompt('3:4') }
+        { text: buildResizePrompt(ratio) }
       ])
-    ]);
+      .then(image => {
+        // Отправляем каждую картинку сразу как готова
+        send('image', { ratio, image });
+      })
+      .catch(err => {
+        send('error', { ratio, message: err.message });
+      })
+    );
 
-    if (landscape43.status === 'fulfilled') send('image', { ratio: '4:3', image: landscape43.value });
-    else send('error', { ratio: '4:3', message: landscape43.reason?.message });
+    // Ждём пока все завершатся
+    await Promise.allSettled(resizePromises);
 
-    if (portrait34.status === 'fulfilled') send('image', { ratio: '3:4', image: portrait34.value });
-    else send('error', { ratio: '3:4', message: portrait34.reason?.message });
-
-    send('progress', { step: 6, total: 6, message: '✅ Все форматы готовы!' });
     send('done', { message: 'Готово!' });
 
   } catch (err) {
@@ -244,7 +186,6 @@ const server = app.listen(PORT, () => {
   console.log(`CreoGen server running on port ${PORT}`);
 });
 
-// Увеличиваем таймаут самого HTTP сервера
-server.timeout = 300000;      // 5 минут
+server.timeout = 300000;
 server.keepAliveTimeout = 300000;
 server.headersTimeout = 310000;
