@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IGBOX — Banner Studio</title>
+<title>CreoGen — Banner Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -35,7 +35,6 @@
   }
   .logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
   .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent); }
-  .header-right { display: flex; align-items: center; gap: 12px; }
   .model-select {
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 8px; padding: 6px 12px;
@@ -49,7 +48,10 @@
   .workspace { display: grid; grid-template-columns: 300px 1fr; flex: 1; overflow: hidden; }
 
   /* LEFT PANEL */
-  .left { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+  .left {
+    background: var(--surface); border-right: 1px solid var(--border);
+    overflow-y: auto; display: flex; flex-direction: column;
+  }
   .left::-webkit-scrollbar { width: 4px; }
   .left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
@@ -60,35 +62,28 @@
     font-family: 'JetBrains Mono', monospace; margin-bottom: 10px;
   }
   .field { margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
   .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
-  .field input, .field textarea, .field select {
+  .field input, .field textarea {
     width: 100%; background: var(--surface2);
     border: 1px solid var(--border); border-radius: 8px;
     padding: 8px 12px; font-family: 'Syne', sans-serif;
     font-size: 13px; color: var(--text); outline: none; transition: border-color 0.15s;
   }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
   .field input::placeholder, .field textarea::placeholder { color: var(--dim); }
   .field textarea { resize: none; height: 70px; line-height: 1.5; font-size: 12px; }
-  .field select option { background: var(--surface2); }
 
-  /* STYLE TAGS */
-  .style-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-  .tag {
-    padding: 4px 10px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 20px;
-    font-size: 11px; font-weight: 600; color: var(--muted);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .tag:hover { border-color: var(--accent); color: var(--text); }
-  .tag.on { background: rgba(200,255,0,0.1); border-color: var(--accent); color: var(--accent); }
-
-  /* GENERATE BUTTON */
+  /* GENERATE */
   .gen-wrap {
     padding: 16px 18px; margin-top: auto;
     position: sticky; bottom: 0;
     background: var(--surface); border-top: 1px solid var(--border);
   }
+  .progress-bar-wrap { margin-bottom: 10px; display: none; }
+  .progress-bar { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+  .progress-label { font-size: 11px; color: var(--muted); margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
   .gen-btn {
     width: 100%; padding: 13px; background: var(--accent);
     border: none; border-radius: 10px;
@@ -105,26 +100,37 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .cost-hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 7px; font-family: 'JetBrains Mono', monospace; }
   .cost-hint b { color: var(--accent); }
+  .err-box {
+    background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.25);
+    border-radius: 8px; padding: 10px 14px; margin-top: 10px;
+    font-size: 12px; color: var(--error);
+    font-family: 'JetBrains Mono', monospace; line-height: 1.6; display: none;
+  }
 
   /* RIGHT PANEL */
-  .right { overflow-y: auto; padding: 20px 24px; background: var(--bg); }
+  .right {
+    overflow-y: auto; padding: 24px;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+  }
   .right::-webkit-scrollbar { width: 4px; }
   .right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
   /* EMPTY STATE */
   .empty {
-    height: 100%; display: flex; flex-direction: column;
+    flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 12px; color: var(--dim); min-height: 400px;
+    gap: 12px; color: var(--dim);
   }
   .empty-icon { font-size: 40px; }
   .empty-title { font-size: 15px; font-weight: 700; color: var(--muted); }
   .empty-sub { font-size: 12px; color: var(--dim); text-align: center; max-width: 260px; line-height: 1.6; }
 
   /* RESULTS */
-  .results-header {
+  .results-area { display: none; flex-direction: column; gap: 20px; }
+
+  .results-toolbar {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px;
   }
   .results-title { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; }
   .dl-all-btn {
@@ -136,101 +142,169 @@
   }
   .dl-all-btn:hover { background: rgba(200,255,0,0.1); }
 
-  /* BANNER CARDS */
-  .banners-grid { display: flex; flex-direction: column; gap: 20px; }
+  /* PREVIEW STRIP — три квадрата в ряд */
+  .preview-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
 
-  .banner-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; overflow: hidden;
+  .preview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
   }
-  .banner-card-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border-bottom: 1px solid var(--border);
-  }
-  .banner-ratio {
-    font-size: 11px; font-weight: 700; color: var(--muted);
-    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
-  }
-  .banner-ratio.ready { color: var(--success); }
-  .banner-actions { display: flex; gap: 6px; }
-  .b-btn {
-    padding: 4px 10px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 6px;
-    font-family: 'Syne', sans-serif; font-size: 11px;
-    font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s;
-  }
-  .b-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .preview-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .preview-card.ready:hover .preview-overlay { opacity: 1; }
 
-  .banner-img-wrap {
-    position: relative; background: var(--surface2); cursor: pointer;
-  }
-  .banner-img-wrap img { width: 100%; display: block; }
-
-  /* SKELETON */
-  .skeleton {
+  /* Все три карточки — квадратные */
+  .preview-thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    overflow: hidden;
     background: var(--surface2);
-    animation: pulse 1.5s ease-in-out infinite;
   }
-  .skeleton-16-9 { aspect-ratio: 16/9; }
-  .skeleton-1-1 { aspect-ratio: 1/1; }
-  .skeleton-9-16 { aspect-ratio: 9/16; max-height: 400px; }
-  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.7} }
 
-  .skeleton-inner {
+  /* Картинка внутри подгоняется под квадрат с сохранением пропорций */
+  .preview-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s;
+  }
+  .preview-card:hover .preview-thumb img { transform: scale(1.03); }
+
+  /* Скелетон */
+  .preview-skeleton {
     width: 100%; height: 100%;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 10px; color: var(--dim);
+    gap: 8px; color: var(--dim);
+    animation: pulse 1.5s ease-in-out infinite;
   }
-  .skeleton-spinner { width: 24px; height: 24px; border: 2px solid var(--dim); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-  .skeleton-text { font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+  .skel-spinner { width: 20px; height: 20px; border: 2px solid var(--dim); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+  .skel-text { font-size: 11px; font-family: 'JetBrains Mono', monospace; text-align: center; padding: 0 8px; }
 
-  /* HOVER OVERLAY */
-  .img-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.6);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+  .preview-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
     opacity: 0; transition: opacity 0.2s;
+    font-size: 22px;
   }
-  .banner-img-wrap:hover .img-overlay { opacity: 1; }
-  .ov-btn {
-    padding: 8px 16px; border-radius: 8px;
-    font-family: 'Syne', sans-serif; font-size: 12px;
-    font-weight: 700; cursor: pointer; border: none; transition: all 0.15s;
-  }
-  .ov-btn.dl { background: var(--accent); color: #000; }
-  .ov-btn.regen { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
 
-  /* PROGRESS */
-  .progress-bar-wrap { padding: 0 18px 12px; }
-  .progress-bar { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
-  .progress-label { font-size: 11px; color: var(--muted); margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
-
-  /* ERROR */
-  .err-box {
-    background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.25);
-    border-radius: 10px; padding: 12px 16px; margin-top: 12px;
-    font-size: 12px; color: var(--error);
-    font-family: 'JetBrains Mono', monospace; line-height: 1.6; display: none;
+  .preview-footer {
+    padding: 8px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--border);
   }
+  .preview-ratio {
+    font-size: 10px; font-weight: 700;
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .preview-ratio.ready { color: var(--success); }
+  .preview-dl {
+    width: 24px; height: 24px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; transition: all 0.15s;
+    font-size: 11px; color: var(--muted);
+  }
+  .preview-dl:hover { border-color: var(--accent); color: var(--accent); }
+  .preview-dl.hidden { opacity: 0; pointer-events: none; }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal-bg.open { display: flex; }
+
+  .modal-inner {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modal-img {
+    display: block;
+    max-width: 90vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    object-fit: contain;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    animation: scaleIn 0.2s ease;
+  }
+  @keyframes scaleIn { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .modal-actions {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-ratio-badge {
+    padding: 5px 14px;
+    background: rgba(200,255,0,0.1);
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .modal-dl-btn {
+    padding: 8px 18px;
+    background: var(--accent);
+    border: none; border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 800;
+    color: #000; cursor: pointer; transition: all 0.15s;
+  }
+  .modal-dl-btn:hover { transform: scale(1.03); }
+  .modal-close {
+    position: fixed; top: 20px; right: 20px;
+    width: 36px; height: 36px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+    font-size: 16px; color: var(--muted); transition: all 0.15s;
+    z-index: 101;
+  }
+  .modal-close:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo"><div class="dot"></div>IGBOX <span style="color:var(--muted);font-weight:400;font-size:13px;margin-left:6px">/ Banner Studio</span></div>
-  <div class="header-right">
-    <select class="model-select" id="modelSelect">
-      <option value="gemini-3-pro-image-preview">Gemini 3 Pro Image ⭐ ($0.134)</option>
-      <option value="gemini-3.1-flash-image-preview">Gemini 3.1 Flash Image ($0.067)</option>
-      <option value="gemini-2.5-flash-image">Gemini 2.5 Flash Image ($0.039)</option>
-    </select>
-  </div>
+  <div class="logo"><div class="dot"></div>CreoGen <span style="color:var(--muted);font-weight:400;font-size:13px;margin-left:6px">/ Banner Studio</span></div>
+  <select class="model-select" id="modelSelect" onchange="updateCost()">
+    <option value="gemini-3-pro-image-preview">Gemini 3 Pro Image ⭐</option>
+    <option value="gemini-3.1-flash-image-preview">Gemini 3.1 Flash Image</option>
+    <option value="gemini-2.5-flash-image">Gemini 2.5 Flash Image</option>
+  </select>
 </header>
 
 <div class="workspace">
 
-  <!-- LEFT PANEL -->
+  <!-- LEFT -->
   <div class="left">
 
     <div class="section">
@@ -251,94 +325,87 @@
         <input type="text" id="line2" placeholder="100% up to $500">
       </div>
       <div class="field">
-        <label>CTA — кнопка</label>
+        <label>CTA — текст кнопки</label>
         <input type="text" id="cta" placeholder="CLAIM NOW">
       </div>
     </div>
 
     <div class="section">
-      <div class="section-label">Визуальная часть</div>
+      <div class="section-label">Визуал</div>
       <div class="field">
         <label>Что должно быть на картинке</label>
-        <textarea id="visual" placeholder="golden coins falling, roulette wheel spinning, casino chips, dramatic lighting"></textarea>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-label">Стиль</div>
-      <div class="style-tags" id="styleTags">
-        <div class="tag on" onclick="toggleTag(this)">Dark Luxury</div>
-        <div class="tag" onclick="toggleTag(this)">Neon Glow</div>
-        <div class="tag" onclick="toggleTag(this)">Gold & Black</div>
-        <div class="tag" onclick="toggleTag(this)">Cinematic</div>
-        <div class="tag" onclick="toggleTag(this)">Vibrant</div>
-        <div class="tag" onclick="toggleTag(this)">Minimal</div>
+        <textarea id="visual" placeholder="Zeus god with lightning bolts, electric blue background, gemstones flying around, dramatic backlight"></textarea>
       </div>
     </div>
 
     <div class="gen-wrap">
-      <div class="progress-bar-wrap" id="progressWrap" style="display:none">
-        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-bar-wrap" id="progressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         <div class="progress-label" id="progressLabel">Подготовка...</div>
       </div>
       <button class="gen-btn" id="genBtn" onclick="generate()">
         <span class="btn-text">🎨 Генерировать</span>
         <div class="spinner"></div>
       </button>
-      <div class="cost-hint">3 запроса · ~<b id="costEst">$0.40</b> · модель: <b id="modelLabel">3 Pro</b></div>
+      <div class="cost-hint">~<b id="costEst">$0.40</b> · 3 запроса</div>
       <div class="err-box" id="errBox"></div>
     </div>
 
   </div>
 
-  <!-- RIGHT PANEL -->
+  <!-- RIGHT -->
   <div class="right" id="rightPanel">
+
     <div class="empty" id="emptyState">
       <div class="empty-icon">🎨</div>
       <div class="empty-title">Здесь появятся баннеры</div>
       <div class="empty-sub">Заполни поля слева и нажми «Генерировать» — получишь 3 формата автоматически</div>
     </div>
 
-    <div id="resultsArea" style="display:none">
-      <div class="results-header">
-        <div class="results-title" id="resultsTitle">16:9 · 1:1 · 9:16</div>
-        <button class="dl-all-btn" onclick="downloadAll()">⬇ Скачать все</button>
+    <div class="results-area" id="resultsArea">
+      <div class="results-toolbar">
+        <div class="results-title" id="resultsTitle">ГЕНЕРАЦИЯ...</div>
+        <button class="dl-all-btn" id="dlAllBtn" onclick="downloadAll()" style="display:none">⬇ Скачать все</button>
       </div>
-      <div class="banners-grid" id="bannersGrid"></div>
+      <div class="preview-strip" id="previewStrip"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModalOnBg(event)">
+  <div class="modal-close" onclick="closeModal()">✕</div>
+  <div class="modal-inner">
+    <img class="modal-img" id="modalImg" src="" alt="">
+    <div class="modal-actions">
+      <div class="modal-ratio-badge" id="modalRatio"></div>
+      <button class="modal-dl-btn" onclick="downloadModal()">⬇ Скачать</button>
     </div>
   </div>
-
 </div>
 
 <script>
   const RATIOS = ['16:9', '1:1', '9:16'];
+  const LABELS = { '16:9': '16:9 — 1920×1080', '1:1': '1:1 — 1080×1080', '9:16': '9:16 — 1080×1920' };
   const generatedImages = {};
+  let modalCurrentRatio = null;
 
-  // Обновляем стоимость при смене модели
-  document.getElementById('modelSelect').addEventListener('change', updateCost);
+  const modelPrices = {
+    'gemini-3-pro-image-preview': 0.40,
+    'gemini-3.1-flash-image-preview': 0.20,
+    'gemini-2.5-flash-image': 0.12,
+  };
 
   function updateCost() {
-    const prices = {
-      'gemini-3-pro-image-preview': { price: 0.40, label: '3 Pro' },
-      'gemini-3.1-flash-image-preview': { price: 0.20, label: '3.1 Flash' },
-      'gemini-2.5-flash-image': { price: 0.12, label: '2.5 Flash' },
-    };
     const model = document.getElementById('modelSelect').value;
-    const p = prices[model] || prices['gemini-3-pro-image-preview'];
-    document.getElementById('costEst').textContent = '$' + p.price.toFixed(2);
-    document.getElementById('modelLabel').textContent = p.label;
-  }
-
-  function toggleTag(el) { el.classList.toggle('on'); }
-
-  function getStyle() {
-    return Array.from(document.querySelectorAll('.tag.on')).map(t => t.textContent).join(', ') || 'Dark Luxury';
+    document.getElementById('costEst').textContent = '$' + (modelPrices[model] || 0.40).toFixed(2);
   }
 
   function showError(msg) {
-    const box = document.getElementById('errBox');
-    box.textContent = '❌ ' + msg;
-    box.style.display = 'block';
+    const b = document.getElementById('errBox');
+    b.textContent = '❌ ' + msg;
+    b.style.display = 'block';
   }
 
   function hideError() {
@@ -350,138 +417,62 @@
     document.getElementById('progressLabel').textContent = label;
   }
 
-  // Создаём карточку-скелетон для каждого формата
-  function buildSkeletons() {
-    const grid = document.getElementById('bannersGrid');
-    grid.innerHTML = '';
-
-    const skeletonClass = { '16:9': 'skeleton-16-9', '1:1': 'skeleton-1-1', '9:16': 'skeleton-9-16' };
-    const labels = { '16:9': '16:9 — 1920×1080', '1:1': '1:1 — 1080×1080', '9:16': '9:16 — 1080×1920' };
+  // Строим три карточки-скелетона
+  function buildStrip() {
+    const strip = document.getElementById('previewStrip');
+    strip.innerHTML = '';
+    Object.keys(generatedImages).forEach(k => delete generatedImages[k]);
 
     RATIOS.forEach(ratio => {
+      const id = ratio.replace(':','-');
       const card = document.createElement('div');
-      card.className = 'banner-card';
-      card.id = `card-${ratio.replace(':','-')}`;
+      card.className = 'preview-card';
+      card.id = `card-${id}`;
       card.innerHTML = `
-        <div class="banner-card-header">
-          <div class="banner-ratio" id="ratio-label-${ratio.replace(':','-')}">${labels[ratio]}</div>
-          <div class="banner-actions">
-            <button class="b-btn" onclick="downloadOne('${ratio}')" id="dl-${ratio.replace(':','-')}" disabled>⬇ Скачать</button>
+        <div class="preview-thumb" id="thumb-${id}">
+          <div class="preview-skeleton">
+            <div class="skel-spinner"></div>
+            <div class="skel-text" id="skel-${id}">Ожидание...</div>
           </div>
         </div>
-        <div class="banner-img-wrap" id="img-wrap-${ratio.replace(':','-')}">
-          <div class="skeleton ${skeletonClass[ratio]}">
-            <div class="skeleton-inner">
-              <div class="skeleton-spinner"></div>
-              <div class="skeleton-text" id="skel-text-${ratio.replace(':','-')}">Ожидание...</div>
-            </div>
-          </div>
+        <div class="preview-footer">
+          <div class="preview-ratio" id="ratio-label-${id}">${ratio}</div>
+          <div class="preview-dl hidden" id="dl-btn-${id}" onclick="event.stopPropagation(); downloadOne('${ratio}')">⬇</div>
         </div>`;
-      grid.appendChild(card);
+      strip.appendChild(card);
     });
   }
 
-  // Показываем картинку в карточке
-  function showImage(ratio, imageData, mimeType) {
+  // Показываем готовую картинку в карточке
+  function showThumb(ratio, imageData, mimeType) {
     const id = ratio.replace(':','-');
-    const wrap = document.getElementById(`img-wrap-${id}`);
-    if (!wrap) return;
-
+    const thumb = document.getElementById(`thumb-${id}`);
+    const card = document.getElementById(`card-${id}`);
     const src = `data:${mimeType};base64,${imageData}`;
-    wrap.innerHTML = `
+
+    thumb.innerHTML = `
       <img src="${src}" alt="Banner ${ratio}">
-      <div class="img-overlay">
-        <button class="ov-btn dl" onclick="downloadOne('${ratio}')">⬇ Скачать</button>
-      </div>`;
+      <div class="preview-overlay">🔍</div>`;
 
-    document.getElementById(`ratio-label-${id}`).classList.add('ready');
-    document.getElementById(`ratio-label-${id}`).textContent = `✅ ${ratio}`;
+    card.classList.add('ready');
+    card.onclick = () => openModal(ratio);
 
-    const dlBtn = document.getElementById(`dl-${id}`);
-    if (dlBtn) dlBtn.disabled = false;
+    const ratioLabel = document.getElementById(`ratio-label-${id}`);
+    ratioLabel.textContent = ratio;
+    ratioLabel.classList.add('ready');
+
+    const dlBtn = document.getElementById(`dl-btn-${id}`);
+    dlBtn.classList.remove('hidden');
 
     generatedImages[ratio] = { data: imageData, mimeType };
   }
 
-  async function generate() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const line1 = document.getElementById('line1').value.trim();
-    const line2 = document.getElementById('line2').value.trim();
-    const cta = document.getElementById('cta').value.trim();
-    const visual = document.getElementById('visual').value.trim();
-    const model = document.getElementById('modelSelect').value;
-    const style = getStyle();
-
-    if (!apiKey) return showError('Введи API ключ');
-    if (!line1) return showError('Введи заголовок (Строчка 1)');
-    if (!visual) return showError('Опиши что должно быть на картинке');
-
-    hideError();
-    const btn = document.getElementById('genBtn');
-    btn.classList.add('loading');
-    btn.disabled = true;
-
-    // Показываем UI
-    document.getElementById('emptyState').style.display = 'none';
-    document.getElementById('resultsArea').style.display = 'block';
-    document.getElementById('progressWrap').style.display = 'block';
-
-    // Строим скелетоны
-    buildSkeletons();
-    Object.keys(generatedImages).forEach(k => delete generatedImages[k]);
-
-    setProgress(5, 'Подключаюсь к AI...');
-
-    try {
-      // Используем Server-Sent Events для получения картинок по мере готовности
-      const params = { apiKey, model, line1, line2, cta, visual, style };
-
-      const response = await fetch('/api/generate-all', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params)
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Ошибка сервера');
-      }
-
-      // Читаем SSE поток
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop();
-
-        for (const line of lines) {
-          if (line.startsWith('event: ')) {
-            // skip
-          } else if (line.startsWith('data: ')) {
-            try {
-              const payload = JSON.parse(line.slice(6));
-              handleSSEEvent(payload);
-            } catch {}
-          }
-        }
-      }
-
-    } catch (err) {
-      showError(err.message);
-    } finally {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-      document.getElementById('progressWrap').style.display = 'none';
-    }
+  // Обновляем текст скелетона
+  function setSkelText(ratio, text) {
+    const el = document.getElementById(`skel-${ratio.replace(':','-')}`);
+    if (el) el.textContent = text;
   }
 
-  // Чуть более умный парсер SSE — ловим event + data вместе
   async function generate() {
     const apiKey = document.getElementById('apiKey').value.trim();
     const line1 = document.getElementById('line1').value.trim();
@@ -489,30 +480,31 @@
     const cta = document.getElementById('cta').value.trim();
     const visual = document.getElementById('visual').value.trim();
     const model = document.getElementById('modelSelect').value;
-    const style = getStyle();
 
     if (!apiKey) return showError('Введи API ключ');
-    if (!line1) return showError('Введи заголовок (Строчка 1)');
-    if (!visual) return showError('Опиши что должно быть на картинке');
+    if (!line1) return showError('Введи заголовок');
+    if (!visual) return showError('Опиши визуальную часть');
 
     hideError();
+
     const btn = document.getElementById('genBtn');
     btn.classList.add('loading');
     btn.disabled = true;
 
     document.getElementById('emptyState').style.display = 'none';
-    document.getElementById('resultsArea').style.display = 'block';
+    document.getElementById('resultsArea').style.display = 'flex';
     document.getElementById('progressWrap').style.display = 'block';
+    document.getElementById('dlAllBtn').style.display = 'none';
+    document.getElementById('resultsTitle').textContent = 'ГЕНЕРАЦИЯ...';
 
-    buildSkeletons();
-    Object.keys(generatedImages).forEach(k => delete generatedImages[k]);
+    buildStrip();
     setProgress(5, 'Подключаюсь к AI...');
 
     try {
       const response = await fetch('/api/generate-all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey, model, line1, line2, cta, visual, style })
+        body: JSON.stringify({ apiKey, model, line1, line2, cta, visual, style: '' })
       });
 
       if (!response.ok) {
@@ -528,7 +520,6 @@
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
         buffer = lines.pop();
@@ -547,15 +538,7 @@
 
     } catch (err) {
       showError(err.message);
-      // Убираем скелетоны при ошибке
-      RATIOS.forEach(ratio => {
-        const id = ratio.replace(':','-');
-        const wrap = document.getElementById(`img-wrap-${id}`);
-        if (wrap) {
-          const skelText = document.getElementById(`skel-text-${id}`);
-          if (skelText) skelText.textContent = '❌ Ошибка';
-        }
-      });
+      RATIOS.forEach(r => setSkelText(r, '❌ Ошибка'));
     } finally {
       btn.classList.remove('loading');
       btn.disabled = false;
@@ -567,37 +550,56 @@
     if (event === 'progress') {
       const pct = Math.round((payload.step / payload.total) * 100);
       setProgress(pct, payload.message);
-
-      // Обновляем текст в скелетонах
       if (payload.step === 1) {
-        document.getElementById('skel-text-16-9').textContent = 'Генерирую базовый 16:9...';
+        setSkelText('16:9', 'Генерирую базовый...');
       } else if (payload.step === 2) {
-        const sq = document.getElementById('skel-text-1-1');
-        const vt = document.getElementById('skel-text-9-16');
-        if (sq) sq.textContent = 'Адаптирую под 1:1...';
-        if (vt) vt.textContent = 'Адаптирую под 9:16...';
+        setSkelText('1:1', 'Адаптирую...');
+        setSkelText('9:16', 'Адаптирую...');
       }
-
     } else if (event === 'image') {
-      showImage(payload.ratio, payload.image.data, payload.image.mimeType);
-      setProgress(
-        payload.ratio === '16:9' ? 40 : payload.ratio === '1:1' ? 70 : 100,
-        payload.ratio === '16:9' ? 'Базовый готов! Адаптирую форматы...' : `${payload.ratio} готов!`
-      );
-
+      showThumb(payload.ratio, payload.image.data, payload.image.mimeType);
+      const done = Object.keys(generatedImages).length;
+      setProgress(done === 1 ? 40 : done === 2 ? 70 : 100,
+        done === 3 ? '✅ Все форматы готовы!' : `${payload.ratio} готов!`);
     } else if (event === 'error') {
-      if (payload.ratio) {
-        const id = payload.ratio.replace(':','-');
-        const skelText = document.getElementById(`skel-text-${id}`);
-        if (skelText) skelText.textContent = '❌ ' + (payload.message || 'Ошибка');
-      } else {
-        showError(payload.message || 'Неизвестная ошибка');
-      }
-
+      if (payload.ratio) setSkelText(payload.ratio, '❌ ' + (payload.message || 'Ошибка'));
+      else showError(payload.message || 'Ошибка');
     } else if (event === 'done') {
-      setProgress(100, '✅ Все форматы готовы!');
-      document.getElementById('resultsTitle').textContent = '3 ФОРМАТА ГОТОВЫ · 16:9 · 1:1 · 9:16';
+      document.getElementById('resultsTitle').textContent = '3 ФОРМАТА · 16:9 · 1:1 · 9:16';
+      document.getElementById('dlAllBtn').style.display = 'flex';
     }
+  }
+
+  // MODAL
+  function openModal(ratio) {
+    const img = generatedImages[ratio];
+    if (!img) return;
+    modalCurrentRatio = ratio;
+    const src = `data:${img.mimeType};base64,${img.data}`;
+    document.getElementById('modalImg').src = src;
+    document.getElementById('modalRatio').textContent = LABELS[ratio] || ratio;
+    document.getElementById('modalBg').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modalBg').classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => { document.getElementById('modalImg').src = ''; }, 300);
+  }
+
+  function closeModalOnBg(e) {
+    if (e.target === document.getElementById('modalBg')) closeModal();
+  }
+
+  // Закрытие по Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  function downloadModal() {
+    if (!modalCurrentRatio) return;
+    downloadOne(modalCurrentRatio);
   }
 
   function downloadOne(ratio) {
@@ -605,17 +607,12 @@
     if (!img) return;
     const a = document.createElement('a');
     a.href = `data:${img.mimeType};base64,${img.data}`;
-    a.download = `igbox-banner-${ratio.replace(':','x')}.png`;
+    a.download = `creogen-${ratio.replace(':','x')}.png`;
     a.click();
   }
 
   function downloadAll() {
-    Object.entries(generatedImages).forEach(([ratio, img]) => {
-      const a = document.createElement('a');
-      a.href = `data:${img.mimeType};base64,${img.data}`;
-      a.download = `igbox-banner-${ratio.replace(':','x')}.png`;
-      a.click();
-    });
+    Object.keys(generatedImages).forEach(ratio => downloadOne(ratio));
   }
 
   updateCost();
