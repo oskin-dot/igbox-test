@@ -7,91 +7,42 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #17171f;
-    --border: #2a2a38;
-    --accent: #c8ff00;
-    --text: #f0f0f5;
-    --muted: #6b6b80;
-    --dim: #3a3a50;
-    --success: #00e5a0;
-    --error: #ff6b6b;
+    --bg: #0a0a0f; --surface: #111118; --surface2: #17171f;
+    --border: #2a2a38; --accent: #c8ff00; --text: #f0f0f5;
+    --muted: #6b6b80; --dim: #3a3a50; --success: #00e5a0; --error: #ff6b6b;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Syne', sans-serif;
-    background: var(--bg); color: var(--text);
-    height: 100vh; overflow: hidden;
-    display: flex; flex-direction: column;
-  }
+  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-  /* HEADER */
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px; height: 52px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface); flex-shrink: 0;
-  }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 52px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
   .logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
   .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent); }
-  .model-select {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 6px 12px;
-    font-family: 'Syne', sans-serif; font-size: 12px;
-    color: var(--text); outline: none; cursor: pointer;
-  }
+  .model-select { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-family: 'Syne', sans-serif; font-size: 12px; color: var(--text); outline: none; cursor: pointer; }
   .model-select:focus { border-color: var(--accent); }
   .model-select option { background: var(--surface2); }
 
-  /* LAYOUT */
   .workspace { display: grid; grid-template-columns: 300px 1fr; flex: 1; overflow: hidden; }
 
-  /* LEFT PANEL */
-  .left {
-    background: var(--surface); border-right: 1px solid var(--border);
-    overflow-y: auto; display: flex; flex-direction: column;
-  }
+  .left { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
   .left::-webkit-scrollbar { width: 4px; }
   .left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
   .section { padding: 16px 18px; border-bottom: 1px solid var(--border); }
-  .section-label {
-    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
-    color: var(--muted); text-transform: uppercase;
-    font-family: 'JetBrains Mono', monospace; margin-bottom: 10px;
-  }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
   .field { margin-bottom: 10px; }
   .field:last-child { margin-bottom: 0; }
   .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
-  .field input, .field textarea {
-    width: 100%; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 8px;
-    padding: 8px 12px; font-family: 'Syne', sans-serif;
-    font-size: 13px; color: var(--text); outline: none; transition: border-color 0.15s;
-  }
+  .field input, .field textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-family: 'Syne', sans-serif; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.15s; }
   .field input:focus, .field textarea:focus { border-color: var(--accent); }
   .field input::placeholder, .field textarea::placeholder { color: var(--dim); }
-  .field textarea { resize: none; height: 70px; line-height: 1.5; font-size: 12px; }
+  .field textarea { resize: none; height: 90px; line-height: 1.5; font-size: 12px; }
 
-  /* GENERATE */
-  .gen-wrap {
-    padding: 16px 18px; margin-top: auto;
-    position: sticky; bottom: 0;
-    background: var(--surface); border-top: 1px solid var(--border);
-  }
+  .gen-wrap { padding: 16px 18px; margin-top: auto; position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--border); }
   .progress-bar-wrap { margin-bottom: 10px; display: none; }
   .progress-bar { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
   .progress-label { font-size: 11px; color: var(--muted); margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
-  .gen-btn {
-    width: 100%; padding: 13px; background: var(--accent);
-    border: none; border-radius: 10px;
-    font-family: 'Syne', sans-serif; font-size: 14px;
-    font-weight: 800; color: #000; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: all 0.2s;
-  }
+  .gen-btn { width: 100%; padding: 13px; background: var(--accent); border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
   .gen-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(200,255,0,0.3); }
   .gen-btn:disabled { background: var(--surface2); color: var(--muted); transform: none; box-shadow: none; cursor: not-allowed; }
   .spinner { width: 15px; height: 15px; border: 2px solid var(--dim); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
@@ -100,194 +51,70 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .cost-hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 7px; font-family: 'JetBrains Mono', monospace; }
   .cost-hint b { color: var(--accent); }
-  .err-box {
-    background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.25);
-    border-radius: 8px; padding: 10px 14px; margin-top: 10px;
-    font-size: 12px; color: var(--error);
-    font-family: 'JetBrains Mono', monospace; line-height: 1.6; display: none;
-  }
+  .err-box { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.25); border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 12px; color: var(--error); font-family: 'JetBrains Mono', monospace; line-height: 1.6; display: none; }
 
-  /* RIGHT PANEL */
-  .right {
-    overflow-y: auto; padding: 24px;
-    background: var(--bg);
-    display: flex; flex-direction: column;
-  }
+  .right { overflow-y: auto; padding: 24px; background: var(--bg); display: flex; flex-direction: column; gap: 20px; }
   .right::-webkit-scrollbar { width: 4px; }
   .right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-  /* EMPTY STATE */
-  .empty {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 12px; color: var(--dim);
-  }
+  .empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--dim); min-height: 400px; }
   .empty-icon { font-size: 40px; }
   .empty-title { font-size: 15px; font-weight: 700; color: var(--muted); }
   .empty-sub { font-size: 12px; color: var(--dim); text-align: center; max-width: 260px; line-height: 1.6; }
 
-  /* RESULTS */
-  .results-area { display: none; flex-direction: column; gap: 20px; }
-
-  .results-toolbar {
-    display: flex; align-items: center; justify-content: space-between;
-  }
+  /* TOOLBAR */
+  .results-toolbar { display: flex; align-items: center; justify-content: space-between; }
   .results-title { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; }
-  .dl-all-btn {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 14px; background: var(--surface);
-    border: 1px solid var(--accent); border-radius: 8px;
-    font-family: 'Syne', sans-serif; font-size: 12px;
-    font-weight: 700; color: var(--accent); cursor: pointer; transition: all 0.15s;
-  }
+  .dl-all-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--surface); border: 1px solid var(--accent); border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--accent); cursor: pointer; transition: all 0.15s; }
   .dl-all-btn:hover { background: rgba(200,255,0,0.1); }
 
-  /* PREVIEW STRIP — три квадрата в ряд */
-  .preview-strip {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
+  /* ГРУППА */
+  .ratio-group { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .group-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .group-title { font-size: 11px; font-weight: 700; color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+  .group-badge { font-size: 10px; padding: 2px 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--dim); }
+  .group-badge.ai { border-color: var(--accent); color: var(--accent); }
+  .group-badge.code { border-color: var(--success); color: var(--success); }
 
-  .preview-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .preview-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  /* КАРТОЧКИ В ГРУППЕ */
+  .group-cards { display: flex; gap: 12px; padding: 12px; }
+
+  .preview-card { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: all 0.2s; position: relative; }
+  .preview-card:hover { border-color: var(--accent); transform: translateY(-2px); }
   .preview-card.ready:hover .preview-overlay { opacity: 1; }
 
-  /* Все три карточки — квадратные */
-  .preview-thumb {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    position: relative;
-    overflow: hidden;
-    background: var(--surface2);
-  }
-
-  /* Картинка внутри подгоняется под квадрат с сохранением пропорций */
-  .preview-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s;
-  }
+  /* Квадратный контейнер для превью */
+  .preview-thumb { width: 100%; aspect-ratio: 1/1; position: relative; overflow: hidden; background: var(--bg); }
+  .preview-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform 0.3s; }
   .preview-card:hover .preview-thumb img { transform: scale(1.03); }
 
   /* Скелетон */
-  .preview-skeleton {
-    width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 8px; color: var(--dim);
-    animation: pulse 1.5s ease-in-out infinite;
-  }
+  .skel { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; animation: pulse 1.5s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
-  .skel-spinner { width: 20px; height: 20px; border: 2px solid var(--dim); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-  .skel-text { font-size: 11px; font-family: 'JetBrains Mono', monospace; text-align: center; padding: 0 8px; }
+  .skel-spin { width: 18px; height: 18px; border: 2px solid var(--dim); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+  .skel-txt { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--dim); text-align: center; padding: 0 6px; }
 
-  .preview-overlay {
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,0.55);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.2s;
-    font-size: 22px;
-  }
+  .preview-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; font-size: 20px; }
 
-  .preview-footer {
-    padding: 8px 10px;
-    display: flex; align-items: center; justify-content: space-between;
-    border-top: 1px solid var(--border);
-  }
-  .preview-ratio {
-    font-size: 10px; font-weight: 700;
-    color: var(--muted); font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.5px;
-  }
-  .preview-ratio.ready { color: var(--success); }
-  .preview-dl {
-    width: 24px; height: 24px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 6px; display: flex; align-items: center;
-    justify-content: center; cursor: pointer; transition: all 0.15s;
-    font-size: 11px; color: var(--muted);
-  }
+  .preview-footer { padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); }
+  .preview-size { font-size: 10px; font-weight: 700; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .preview-size.ready { color: var(--success); }
+  .preview-dl { width: 22px; height: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; font-size: 10px; color: var(--muted); opacity: 0; }
+  .preview-dl.show { opacity: 1; }
   .preview-dl:hover { border-color: var(--accent); color: var(--accent); }
-  .preview-dl.hidden { opacity: 0; pointer-events: none; }
 
   /* MODAL */
-  .modal-bg {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(8px);
-    z-index: 100;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    animation: fadeIn 0.2s ease;
-  }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 24px; }
+  .modal-bg.open { display: flex; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  .modal-bg.open { display: flex; }
-
-  .modal-inner {
-    position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .modal-img {
-    display: block;
-    max-width: 90vw;
-    max-height: 80vh;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    object-fit: contain;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-    animation: scaleIn 0.2s ease;
-  }
+  .modal-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 90vw; max-height: 90vh; }
+  .modal-img { display: block; max-width: 90vw; max-height: 80vh; border-radius: 12px; border: 1px solid var(--border); object-fit: contain; box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: scaleIn 0.2s ease; }
   @keyframes scaleIn { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
-
-  .modal-actions {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .modal-ratio-badge {
-    padding: 5px 14px;
-    background: rgba(200,255,0,0.1);
-    border: 1px solid var(--accent);
-    border-radius: 20px;
-    font-size: 11px; font-weight: 700;
-    color: var(--accent);
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .modal-dl-btn {
-    padding: 8px 18px;
-    background: var(--accent);
-    border: none; border-radius: 8px;
-    font-family: 'Syne', sans-serif;
-    font-size: 13px; font-weight: 800;
-    color: #000; cursor: pointer; transition: all 0.15s;
-  }
-  .modal-dl-btn:hover { transform: scale(1.03); }
-  .modal-close {
-    position: fixed; top: 20px; right: 20px;
-    width: 36px; height: 36px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; cursor: pointer;
-    font-size: 16px; color: var(--muted); transition: all 0.15s;
-    z-index: 101;
-  }
+  .modal-actions { display: flex; align-items: center; gap: 10px; }
+  .modal-badge { padding: 5px 14px; background: rgba(200,255,0,0.1); border: 1px solid var(--accent); border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+  .modal-dl { padding: 8px 20px; background: var(--accent); border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; color: #000; cursor: pointer; transition: all 0.15s; }
+  .modal-dl:hover { transform: scale(1.03); }
+  .modal-close { position: fixed; top: 20px; right: 20px; width: 36px; height: 36px; background: var(--surface2); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--muted); transition: all 0.15s; z-index: 101; }
   .modal-close:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
@@ -298,22 +125,15 @@
   <select class="model-select" id="modelSelect" onchange="updateCost()">
     <option value="gemini-3.1-flash-image-preview">Nano Banana 2 ⭐ (~$0.07)</option>
     <option value="gemini-2.5-flash-image">Nano Banana (~$0.04)</option>
-    <option value="imagen-4.0-generate-001">Imagen 4 (~$0.04)</option>
   </select>
 </header>
 
 <div class="workspace">
-
-  <!-- LEFT -->
   <div class="left">
-
     <div class="section">
       <div class="section-label">API Ключ</div>
-      <div class="field">
-        <input type="password" id="apiKey" placeholder="AIzaSy...">
-      </div>
+      <div class="field"><input type="password" id="apiKey" placeholder="AIzaSy..."></div>
     </div>
-
     <div class="section">
       <div class="section-label">Текст баннера</div>
       <div class="field">
@@ -322,22 +142,20 @@
       </div>
       <div class="field">
         <label>СТРОЧКА 2 — подзаголовок</label>
-        <input type="text" id="line2" placeholder="100% up to $500">
+        <input type="text" id="line2" placeholder="50 Free Spins">
       </div>
       <div class="field">
         <label>CTA — текст кнопки</label>
         <input type="text" id="cta" placeholder="CLAIM NOW">
       </div>
     </div>
-
     <div class="section">
-      <div class="section-label">Визуал</div>
+      <div class="section-label">Визуальная часть</div>
       <div class="field">
-        <label>Что должно быть на картинке</label>
-        <textarea id="visual" placeholder="Zeus god with lightning bolts, electric blue background, gemstones flying around, dramatic backlight"></textarea>
+        <label>Опиши правую часть баннера</label>
+        <textarea id="visual" placeholder="Пример: smiling man holding smartphone with casino app screen towards viewer, giving thumbs up, blue gradient background with golden coins flying around"></textarea>
       </div>
     </div>
-
     <div class="gen-wrap">
       <div class="progress-bar-wrap" id="progressWrap">
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -347,275 +165,375 @@
         <span class="btn-text">🎨 Генерировать</span>
         <div class="spinner"></div>
       </button>
-      <div class="cost-hint">~<b id="costEst">$0.40</b> · 3 запроса</div>
+      <div class="cost-hint">6 AI запросов · ~<b id="costEst">$0.40</b> · 12 размеров</div>
       <div class="err-box" id="errBox"></div>
     </div>
-
   </div>
 
-  <!-- RIGHT -->
   <div class="right" id="rightPanel">
-
     <div class="empty" id="emptyState">
       <div class="empty-icon">🎨</div>
       <div class="empty-title">Здесь появятся баннеры</div>
-      <div class="empty-sub">Заполни поля слева и нажми «Генерировать» — получишь 3 формата автоматически</div>
+      <div class="empty-sub">Заполни поля слева и нажми «Генерировать» — получишь 12 форматов автоматически</div>
     </div>
 
-    <div class="results-area" id="resultsArea">
+    <div id="resultsArea" style="display:none; flex-direction:column; gap:16px;">
       <div class="results-toolbar">
         <div class="results-title" id="resultsTitle">ГЕНЕРАЦИЯ...</div>
         <button class="dl-all-btn" id="dlAllBtn" onclick="downloadAll()" style="display:none">⬇ Скачать все</button>
       </div>
-      <div class="preview-strip" id="previewStrip"></div>
+      <div id="groupsContainer"></div>
     </div>
-
   </div>
 </div>
 
 <!-- MODAL -->
-<div class="modal-bg" id="modalBg" onclick="closeModalOnBg(event)">
+<div class="modal-bg" id="modalBg" onclick="closeModalBg(event)">
   <div class="modal-close" onclick="closeModal()">✕</div>
   <div class="modal-inner">
     <img class="modal-img" id="modalImg" src="" alt="">
     <div class="modal-actions">
-      <div class="modal-ratio-badge" id="modalRatio"></div>
-      <button class="modal-dl-btn" onclick="downloadModal()">⬇ Скачать</button>
+      <div class="modal-badge" id="modalBadge"></div>
+      <button class="modal-dl" onclick="downloadModal()">⬇ Скачать</button>
     </div>
   </div>
 </div>
 
 <script>
-  const RATIOS = ['16:9', '1:1', '9:16'];
-  const LABELS = { '16:9': '16:9 — 1920×1080', '1:1': '1:1 — 1080×1080', '9:16': '9:16 — 1080×1920' };
-  const generatedImages = {};
-  let modalCurrentRatio = null;
+// ─── Конфиг групп ───
+const GROUPS = [
+  {
+    id: '16-9',
+    title: 'Горизонтальный',
+    aiRatio: '16:9',
+    sizes: [
+      { key: '1920x1080', label: '1920×1080', ratio: '16:9', fromAI: true },
+      { key: '1280x720',  label: '1280×720',  ratio: '16:9', fromAI: false, scaleOf: '1920x1080', w: 1280, h: 720 },
+    ]
+  },
+  {
+    id: '1-1',
+    title: 'Квадрат',
+    aiRatio: '1:1',
+    sizes: [
+      { key: '1080x1080', label: '1080×1080', ratio: '1:1', fromAI: true },
+      { key: '800x800',   label: '800×800',   ratio: '1:1', fromAI: false, scaleOf: '1080x1080', w: 800, h: 800 },
+    ]
+  },
+  {
+    id: '9-16',
+    title: 'Вертикальный',
+    aiRatio: '9:16',
+    sizes: [
+      { key: '1080x1920', label: '1080×1920', ratio: '9:16', fromAI: true },
+      { key: '720x1280',  label: '720×1280',  ratio: '9:16', fromAI: false, scaleOf: '1080x1920', w: 720, h: 1280 },
+    ]
+  },
+  {
+    id: '191-1',
+    title: 'Feed / OG',
+    aiRatio: '1.91:1',
+    sizes: [
+      { key: '1200x628', label: '1200×628', ratio: '1.91:1', fromAI: true },
+      { key: '1200x627', label: '1200×627', ratio: '1.91:1', fromAI: false, scaleOf: '1200x628', w: 1200, h: 627 },
+    ]
+  },
+  {
+    id: '4-3',
+    title: 'Landscape 4:3',
+    aiRatio: '4:3',
+    sizes: [
+      { key: '1024x768', label: '1024×768', ratio: '4:3', fromAI: true },
+    ]
+  },
+  {
+    id: '3-4',
+    title: 'Portrait 3:4',
+    aiRatio: '3:4',
+    sizes: [
+      { key: '768x1024', label: '768×1024', ratio: '3:4', fromAI: true },
+    ]
+  },
+];
 
-  const modelPrices = {
-    'gemini-3-pro-image-preview': 0.40,
-    'gemini-3.1-flash-image-preview': 0.20,
-    'gemini-2.5-flash-image': 0.12,
-  };
+const images = {}; // key → { data, mimeType }
+let modalKey = null;
 
-  function updateCost() {
-    const model = document.getElementById('modelSelect').value;
-    document.getElementById('costEst').textContent = '$' + (modelPrices[model] || 0.40).toFixed(2);
-  }
+const modelPrices = {
+  'gemini-3.1-flash-image-preview': 0.40,
+  'gemini-2.5-flash-image': 0.24,
+};
 
-  function showError(msg) {
-    const b = document.getElementById('errBox');
-    b.textContent = '❌ ' + msg;
-    b.style.display = 'block';
-  }
+function updateCost() {
+  const m = document.getElementById('modelSelect').value;
+  document.getElementById('costEst').textContent = '$' + (modelPrices[m] || 0.40).toFixed(2);
+}
 
-  function hideError() {
-    document.getElementById('errBox').style.display = 'none';
-  }
+function showError(msg) {
+  const b = document.getElementById('errBox');
+  b.textContent = '❌ ' + msg;
+  b.style.display = 'block';
+}
+function hideError() { document.getElementById('errBox').style.display = 'none'; }
 
-  function setProgress(pct, label) {
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressLabel').textContent = label;
-  }
+function setProgress(pct, label) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = label;
+}
 
-  // Строим три карточки-скелетона
-  function buildStrip() {
-    const strip = document.getElementById('previewStrip');
-    strip.innerHTML = '';
-    Object.keys(generatedImages).forEach(k => delete generatedImages[k]);
+// Строим все группы с скелетонами
+function buildGroups() {
+  Object.keys(images).forEach(k => delete images[k]);
+  const container = document.getElementById('groupsContainer');
+  container.innerHTML = '';
 
-    RATIOS.forEach(ratio => {
-      const id = ratio.replace(':','-');
-      const card = document.createElement('div');
-      card.className = 'preview-card';
-      card.id = `card-${id}`;
-      card.innerHTML = `
-        <div class="preview-thumb" id="thumb-${id}">
-          <div class="preview-skeleton">
-            <div class="skel-spinner"></div>
-            <div class="skel-text" id="skel-${id}">Ожидание...</div>
+  GROUPS.forEach(group => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'ratio-group';
+    groupEl.style.marginBottom = '12px';
+    groupEl.id = `group-${group.id}`;
+
+    const cards = group.sizes.map(size => `
+      <div class="preview-card" id="card-${size.key}">
+        <div class="preview-thumb" id="thumb-${size.key}">
+          <div class="skel">
+            <div class="skel-spin"></div>
+            <div class="skel-txt" id="skel-${size.key}">${size.fromAI ? 'AI генерирует...' : 'Ожидание...'}</div>
           </div>
         </div>
         <div class="preview-footer">
-          <div class="preview-ratio" id="ratio-label-${id}">${ratio}</div>
-          <div class="preview-dl hidden" id="dl-btn-${id}" onclick="event.stopPropagation(); downloadOne('${ratio}')">⬇</div>
-        </div>`;
-      strip.appendChild(card);
-    });
-  }
+          <div class="preview-size" id="sizelabel-${size.key}">${size.label}</div>
+          <div class="preview-dl" id="dl-${size.key}" onclick="event.stopPropagation(); downloadOne('${size.key}')">⬇</div>
+        </div>
+      </div>`).join('');
 
-  // Показываем готовую картинку в карточке
-  function showThumb(ratio, imageData, mimeType) {
-    const id = ratio.replace(':','-');
-    const thumb = document.getElementById(`thumb-${id}`);
-    const card = document.getElementById(`card-${id}`);
-    const src = `data:${mimeType};base64,${imageData}`;
+    groupEl.innerHTML = `
+      <div class="group-header">
+        <div class="group-title">
+          ${group.title}
+          <span class="group-badge ai" id="badge-${group.id}">AI · ${group.aiRatio}</span>
+        </div>
+      </div>
+      <div class="group-cards">${cards}</div>`;
 
-    thumb.innerHTML = `
-      <img src="${src}" alt="Banner ${ratio}">
-      <div class="preview-overlay">🔍</div>`;
-
-    card.classList.add('ready');
-    card.onclick = () => openModal(ratio);
-
-    const ratioLabel = document.getElementById(`ratio-label-${id}`);
-    ratioLabel.textContent = ratio;
-    ratioLabel.classList.add('ready');
-
-    const dlBtn = document.getElementById(`dl-btn-${id}`);
-    dlBtn.classList.remove('hidden');
-
-    generatedImages[ratio] = { data: imageData, mimeType };
-  }
-
-  // Обновляем текст скелетона
-  function setSkelText(ratio, text) {
-    const el = document.getElementById(`skel-${ratio.replace(':','-')}`);
-    if (el) el.textContent = text;
-  }
-
-  async function generate() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const line1 = document.getElementById('line1').value.trim();
-    const line2 = document.getElementById('line2').value.trim();
-    const cta = document.getElementById('cta').value.trim();
-    const visual = document.getElementById('visual').value.trim();
-    const model = document.getElementById('modelSelect').value;
-
-    if (!apiKey) return showError('Введи API ключ');
-    if (!line1) return showError('Введи заголовок');
-    if (!visual) return showError('Опиши визуальную часть');
-
-    hideError();
-
-    const btn = document.getElementById('genBtn');
-    btn.classList.add('loading');
-    btn.disabled = true;
-
-    document.getElementById('emptyState').style.display = 'none';
-    document.getElementById('resultsArea').style.display = 'flex';
-    document.getElementById('progressWrap').style.display = 'block';
-    document.getElementById('dlAllBtn').style.display = 'none';
-    document.getElementById('resultsTitle').textContent = 'ГЕНЕРАЦИЯ...';
-
-    buildStrip();
-    setProgress(5, 'Подключаюсь к AI...');
-
-    try {
-      const response = await fetch('/api/generate-all', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey, model, line1, line2, cta, visual, style: '' })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Ошибка сервера');
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let currentEvent = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop();
-
-        for (const line of lines) {
-          if (line.startsWith('event: ')) {
-            currentEvent = line.slice(7).trim();
-          } else if (line.startsWith('data: ')) {
-            try {
-              const payload = JSON.parse(line.slice(6));
-              handleEvent(currentEvent, payload);
-            } catch {}
-          }
-        }
-      }
-
-    } catch (err) {
-      showError(err.message);
-      RATIOS.forEach(r => setSkelText(r, '❌ Ошибка'));
-    } finally {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-      document.getElementById('progressWrap').style.display = 'none';
-    }
-  }
-
-  function handleEvent(event, payload) {
-    if (event === 'progress') {
-      const pct = Math.round((payload.step / payload.total) * 100);
-      setProgress(pct, payload.message);
-      if (payload.step === 1) {
-        setSkelText('16:9', 'Генерирую базовый...');
-      } else if (payload.step === 2) {
-        setSkelText('1:1', 'Адаптирую...');
-        setSkelText('9:16', 'Адаптирую...');
-      }
-    } else if (event === 'image') {
-      showThumb(payload.ratio, payload.image.data, payload.image.mimeType);
-      const done = Object.keys(generatedImages).length;
-      setProgress(done === 1 ? 40 : done === 2 ? 70 : 100,
-        done === 3 ? '✅ Все форматы готовы!' : `${payload.ratio} готов!`);
-    } else if (event === 'error') {
-      if (payload.ratio) setSkelText(payload.ratio, '❌ ' + (payload.message || 'Ошибка'));
-      else showError(payload.message || 'Ошибка');
-    } else if (event === 'done') {
-      document.getElementById('resultsTitle').textContent = '3 ФОРМАТА · 16:9 · 1:1 · 9:16';
-      document.getElementById('dlAllBtn').style.display = 'flex';
-    }
-  }
-
-  // MODAL
-  function openModal(ratio) {
-    const img = generatedImages[ratio];
-    if (!img) return;
-    modalCurrentRatio = ratio;
-    const src = `data:${img.mimeType};base64,${img.data}`;
-    document.getElementById('modalImg').src = src;
-    document.getElementById('modalRatio').textContent = LABELS[ratio] || ratio;
-    document.getElementById('modalBg').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal() {
-    document.getElementById('modalBg').classList.remove('open');
-    document.body.style.overflow = '';
-    setTimeout(() => { document.getElementById('modalImg').src = ''; }, 300);
-  }
-
-  function closeModalOnBg(e) {
-    if (e.target === document.getElementById('modalBg')) closeModal();
-  }
-
-  // Закрытие по Escape
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
+    container.appendChild(groupEl);
   });
+}
 
-  function downloadModal() {
-    if (!modalCurrentRatio) return;
-    downloadOne(modalCurrentRatio);
+// Показываем картинку в карточке
+function showCard(key, data, mimeType) {
+  const thumb = document.getElementById(`thumb-${key}`);
+  const card = document.getElementById(`card-${key}`);
+  if (!thumb || !card) return;
+
+  const src = `data:${mimeType};base64,${data}`;
+  thumb.innerHTML = `
+    <img src="${src}" alt="${key}">
+    <div class="preview-overlay">🔍</div>`;
+
+  card.classList.add('ready');
+  card.onclick = () => openModal(key);
+
+  const lbl = document.getElementById(`sizelabel-${key}`);
+  if (lbl) lbl.classList.add('ready');
+
+  const dl = document.getElementById(`dl-${key}`);
+  if (dl) dl.classList.add('show');
+
+  images[key] = { data, mimeType };
+}
+
+function setSkel(key, text) {
+  const el = document.getElementById(`skel-${key}`);
+  if (el) el.textContent = text;
+}
+
+// Ресайз через Canvas (без AI)
+function resizeImage(srcData, srcMime, targetW, targetH) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+      const b64 = canvas.toDataURL('image/png').split(',')[1];
+      resolve({ data: b64, mimeType: 'image/png' });
+    };
+    img.src = `data:${srcMime};base64,${srcData}`;
+  });
+}
+
+// После получения AI картинки — ресайзим дубли
+async function processCodeResizes(aiRatio, aiData, aiMime) {
+  for (const group of GROUPS) {
+    if (group.aiRatio !== aiRatio) continue;
+    for (const size of group.sizes) {
+      if (size.fromAI) continue;
+      setSkel(size.key, 'Ресайз...');
+      try {
+        const resized = await resizeImage(aiData, aiMime, size.w, size.h);
+        showCard(size.key, resized.data, resized.mimeType);
+      } catch(e) {
+        setSkel(size.key, '❌ Ошибка ресайза');
+      }
+    }
   }
+}
 
-  function downloadOne(ratio) {
-    const img = generatedImages[ratio];
-    if (!img) return;
-    const a = document.createElement('a');
-    a.href = `data:${img.mimeType};base64,${img.data}`;
-    a.download = `creogen-${ratio.replace(':','x')}.png`;
-    a.click();
+// Находим key основного AI размера по ratio
+function getAIKey(ratio) {
+  for (const g of GROUPS) {
+    if (g.aiRatio === ratio) {
+      const aiSize = g.sizes.find(s => s.fromAI);
+      return aiSize?.key;
+    }
   }
+  return null;
+}
 
-  function downloadAll() {
-    Object.keys(generatedImages).forEach(ratio => downloadOne(ratio));
+async function generate() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const line1  = document.getElementById('line1').value.trim();
+  const line2  = document.getElementById('line2').value.trim();
+  const cta    = document.getElementById('cta').value.trim();
+  const visual = document.getElementById('visual').value.trim();
+  const model  = document.getElementById('modelSelect').value;
+
+  if (!apiKey) return showError('Введи API ключ');
+  if (!line1)  return showError('Введи заголовок');
+
+  hideError();
+  const btn = document.getElementById('genBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  document.getElementById('emptyState').style.display = 'none';
+  const ra = document.getElementById('resultsArea');
+  ra.style.display = 'flex';
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('dlAllBtn').style.display = 'none';
+  document.getElementById('resultsTitle').textContent = 'ГЕНЕРАЦИЯ...';
+
+  buildGroups();
+  setProgress(5, 'Подключаюсь к AI...');
+
+  try {
+    const response = await fetch('/api/generate-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey, model, line1, line2, cta, visual })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Ошибка сервера');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let currentEvent = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (line.startsWith('event: ')) {
+          currentEvent = line.slice(7).trim();
+        } else if (line.startsWith('data: ')) {
+          try {
+            const payload = JSON.parse(line.slice(6));
+            await handleEvent(currentEvent, payload);
+          } catch {}
+        }
+        // keepalive строки (: keepalive) просто игнорируем
+      }
+    }
+
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    document.getElementById('progressWrap').style.display = 'none';
   }
+}
 
-  updateCost();
+async function handleEvent(event, payload) {
+  if (event === 'progress') {
+    const pct = Math.round((payload.step / payload.total) * 100);
+    setProgress(pct, payload.message);
+
+  } else if (event === 'image') {
+    const ratio = payload.ratio;
+    const aiKey = getAIKey(ratio);
+    if (aiKey) {
+      showCard(aiKey, payload.image.data, payload.image.mimeType);
+      // Ресайзим дубли кодом
+      await processCodeResizes(ratio, payload.image.data, payload.image.mimeType);
+    }
+    const done = Object.keys(images).filter(k => images[k]).length;
+    setProgress(Math.min(95, done * 8), `${ratio} готов!`);
+
+  } else if (event === 'error') {
+    if (payload.ratio) {
+      const aiKey = getAIKey(payload.ratio);
+      if (aiKey) setSkel(aiKey, '❌ ' + (payload.message || 'Ошибка'));
+    } else {
+      showError(payload.message || 'Ошибка');
+    }
+
+  } else if (event === 'done') {
+    setProgress(100, '✅ Все форматы готовы!');
+    document.getElementById('resultsTitle').textContent = '12 ФОРМАТОВ ГОТОВЫ';
+    document.getElementById('dlAllBtn').style.display = 'flex';
+  }
+}
+
+// MODAL
+function openModal(key) {
+  const img = images[key];
+  if (!img) return;
+  modalKey = key;
+  document.getElementById('modalImg').src = `data:${img.mimeType};base64,${img.data}`;
+  document.getElementById('modalBadge').textContent = key.replace('x', '×');
+  document.getElementById('modalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalBg(e) {
+  if (e.target === document.getElementById('modalBg')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function downloadModal() { if (modalKey) downloadOne(modalKey); }
+
+function downloadOne(key) {
+  const img = images[key];
+  if (!img) return;
+  const a = document.createElement('a');
+  a.href = `data:${img.mimeType};base64,${img.data}`;
+  a.download = `creogen-${key}.png`;
+  a.click();
+}
+
+function downloadAll() {
+  Object.keys(images).forEach(key => downloadOne(key));
+}
+
+updateCost();
 </script>
 </body>
 </html>
