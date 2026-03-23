@@ -19,10 +19,22 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'CreoGen server running' });
 });
 
-async function callGemini(apiKey, model, parts) {
+async function callGemini(apiKey, model, parts, aspectRatio) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 240000);
+
+  const generationConfig = {
+    responseModalities: ['IMAGE', 'TEXT'],
+    candidateCount: 1,
+  };
+
+  if (aspectRatio) generationConfig.aspectRatio = aspectRatio;
+
+  // Nano Banana Pro 2K
+  if (model === 'gemini-3-pro-image-preview') {
+    generationConfig.imageSize = '2K';
+  }
 
   try {
     const res = await fetch(url, {
@@ -30,10 +42,7 @@ async function callGemini(apiKey, model, parts) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts }],
-        generationConfig: {
-          responseModalities: ['IMAGE', 'TEXT'],
-          candidateCount: 1,
-        }
+        generationConfig
       }),
       signal: controller.signal
     });
@@ -57,69 +66,57 @@ async function callGemini(apiKey, model, parts) {
   }
 }
 
-function buildBasePrompt({ line1, line2, cta, visual }) {
+function buildBasePrompt({ line1, line2, cta, visual, hasReference }) {
+  const referenceNote = hasReference
+    ? 'Use the provided reference image for composition and overall layout. Arrange elements in a similar way — recreate the feel and layout of the reference, but with the new content specified below.\n\n'
+    : '';
+
   const textBlock = [
     line1 ? `  * Headline (large, bold, uppercase): "${line1}"` : '',
     line2 ? `  * Subheadline (medium size): "${line2}"` : '',
-    cta   ? `  * CTA button with text: "${cta}"` : '',
+    cta   ? `  * CTA button: "${cta}"` : '',
   ].filter(Boolean).join('\n');
 
-  const visualBlock = visual
-    ? `- Right side (60% of image): ${visual}`
-    : '';
+  const visualBlock = visual ? `\nVISUAL BLOCK:\n- Position: right part of the image\n- Content: ${visual}` : '';
 
-  return `You are a professional advertising banner designer.
+  return `${referenceNote}You are a professional advertising banner designer.
+Create a high-quality advertising banner in 16:9 horizontal format.
 
-TASK: Create a high-quality advertising banner in 16:9 horizontal format.
-
-LAYOUT:
-- Left side (40% of image): text area
+TEXT BLOCK:
+- Position: left part of the image
+- Content:
 ${textBlock}
 ${visualBlock}
 
-TECHNICAL REQUIREMENTS:
-- All text must be sharp, clearly readable, well-designed
-- Text should have good contrast against the background
-- No additional text, labels or watermarks beyond what is specified
-- Professional advertising quality, suitable for major ad networks
-- High resolution, crisp edges`;
+The text block and visual block are part of one cohesive composition.
+Seamless full-bleed background that flows naturally across the entire image.
+Sharp readable text, good contrast, no watermarks.
+Professional advertising quality for major ad networks.`;
 }
 
 function buildResizePrompt(ratio) {
-  const layouts = {
-    '1:1': `Adapt this advertising banner to 1:1 square format.
-Redistribute all elements compositionally correct for the new dimensions.
-- Top area (35%): headline and subheadline, centered
-- Middle (20%): CTA button, centered
-- Bottom (45%): main visual element
-Keep all original text exactly as-is. Keep same style and colors. No watermarks.`,
-
-    '9:16': `Adapt this advertising banner to 9:16 vertical format (Stories/Reels).
-Redistribute all elements compositionally correct for the new dimensions.
-- Top (20%): headline, centered, large
-- Upper-middle (15%): subheadline, centered
-- Center (40%): main visual, large and impactful
-- Bottom (25%): CTA button, centered
-Keep all original text exactly as-is. Keep same style and colors. No watermarks.`,
-
-    '1.91:1': `Adapt this advertising banner to 1.91:1 format (1200x628, Facebook/Google feed).
-Redistribute all elements compositionally correct for the new dimensions.
-Keep horizontal layout similar to 16:9 but slightly more compact.
-Keep all original text exactly as-is. Keep same style and colors. No watermarks.`,
-
-    '4:3': `Adapt this advertising banner to 4:3 format (1024x768).
-Redistribute all elements compositionally correct for the new dimensions.
-Keep all original text exactly as-is. Keep same style and colors. No watermarks.`,
-
-    '3:4': `Adapt this advertising banner to 3:4 vertical format (768x1024).
-Redistribute all elements compositionally correct for the new dimensions.
-Keep all original text exactly as-is. Keep same style and colors. No watermarks.`,
+  const ratioNames = {
+    '1:1':    '1:1 square',
+    '9:16':   '9:16 vertical',
+    '1.91:1': '1.91:1',
+    '4:3':    '4:3',
+    '3:4':    '3:4 vertical',
   };
-  return layouts[ratio] || '';
+  return `Adapt this banner to ${ratioNames[ratio]} format. Redistribute all elements compositionally correct for the new dimensions.`;
 }
 
+// Очередь форматов — строго последовательно
+const QUEUE = [
+  { ratio: '16:9',   aspectRatio: '16:9',  label: '16:9' },
+  { ratio: '1:1',    aspectRatio: '1:1',   label: '1:1' },
+  { ratio: '9:16',   aspectRatio: '9:16',  label: '9:16' },
+  { ratio: '1.91:1', aspectRatio: '16:9',  label: '1.91:1' },
+  { ratio: '4:3',    aspectRatio: '4:3',   label: '4:3' },
+  { ratio: '3:4',    aspectRatio: '3:4',   label: '3:4' },
+];
+
 app.post('/api/generate-all', async (req, res) => {
-  const { apiKey, model, line1, line2, cta, visual } = req.body;
+  const { apiKey, model, line1, line2, cta, visual, referenceImage, referenceMimeType } = req.body;
 
   if (!apiKey || !line1) {
     return res.status(400).json({ error: 'Нужны: apiKey, line1' });
@@ -134,42 +131,57 @@ app.post('/api/generate-all', async (req, res) => {
     try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch(e) {}
   };
 
-  // Keepalive каждые 15 сек
   const keepalive = setInterval(() => {
     try { res.write(': keepalive\n\n'); } catch(e) { clearInterval(keepalive); }
   }, 15000);
 
   const selectedModel = model || 'gemini-3.1-flash-image-preview';
-  const RESIZE_RATIOS = ['1:1', '9:16', '1.91:1', '4:3', '3:4'];
+  let baseImage = null;
 
   try {
-    // ── Шаг 1: базовый 16:9 ──
-    send('progress', { step: 1, total: 2, message: 'Генерирую базовый баннер 16:9...' });
+    for (let i = 0; i < QUEUE.length; i++) {
+      const { ratio, aspectRatio, label } = QUEUE[i];
 
-    const baseImage = await callGemini(apiKey, selectedModel, [
-      { text: buildBasePrompt({ line1, line2, cta, visual }) }
-    ]);
+      send('progress', {
+        step: i + 1,
+        total: QUEUE.length,
+        message: `Генерирую ${label}...`,
+        ratio
+      });
 
-    send('image', { ratio: '16:9', image: baseImage });
-    send('progress', { step: 2, total: 2, message: 'Адаптирую все форматы параллельно...' });
+      try {
+        let parts;
 
-    // ── Шаг 2: все адаптации ПАРАЛЛЕЛЬНО ──
-    const resizePromises = RESIZE_RATIOS.map(ratio =>
-      callGemini(apiKey, selectedModel, [
-        { inlineData: { mimeType: baseImage.mimeType, data: baseImage.data } },
-        { text: buildResizePrompt(ratio) }
-      ])
-      .then(image => {
-        // Отправляем каждую картинку сразу как готова
+        if (ratio === '16:9') {
+          // Базовый запрос
+          parts = [];
+          if (referenceImage && referenceMimeType) {
+            parts.push({ inlineData: { mimeType: referenceMimeType, data: referenceImage } });
+          }
+          parts.push({ text: buildBasePrompt({ line1, line2, cta, visual, hasReference: !!referenceImage }) });
+        } else {
+          // Ресайз на основе базового
+          parts = [
+            { inlineData: { mimeType: baseImage.mimeType, data: baseImage.data } },
+            { text: buildResizePrompt(ratio) }
+          ];
+        }
+
+        const image = await callGemini(apiKey, selectedModel, parts, ratio === '16:9' ? aspectRatio : null);
+
+        if (ratio === '16:9') baseImage = image;
+
         send('image', { ratio, image });
-      })
-      .catch(err => {
-        send('error', { ratio, message: err.message });
-      })
-    );
 
-    // Ждём пока все завершатся
-    await Promise.allSettled(resizePromises);
+      } catch(err) {
+        send('error', { ratio, message: err.message });
+        // Если базовый не сгенерился — останавливаем всё
+        if (ratio === '16:9') {
+          send('done', { message: 'Ошибка базовой генерации' });
+          return;
+        }
+      }
+    }
 
     send('done', { message: 'Готово!' });
 
