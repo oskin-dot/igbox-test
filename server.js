@@ -19,7 +19,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'CreoGen server running' });
 });
 
-async function callGemini(apiKey, model, parts, aspectRatio) {
+async function callGemini(apiKey, model, parts) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 240000);
@@ -28,13 +28,6 @@ async function callGemini(apiKey, model, parts, aspectRatio) {
     responseModalities: ['IMAGE', 'TEXT'],
     candidateCount: 1,
   };
-
-  if (aspectRatio) generationConfig.aspectRatio = aspectRatio;
-
-  // Nano Banana Pro 2K
-  if (model === 'gemini-3-pro-image-preview') {
-    generationConfig.imageSize = '2K';
-  }
 
   try {
     const res = await fetch(url, {
@@ -167,7 +160,7 @@ app.post('/api/generate-all', async (req, res) => {
           ];
         }
 
-        const image = await callGemini(apiKey, selectedModel, parts, ratio === '16:9' ? aspectRatio : null);
+        const image = await callGemini(apiKey, selectedModel, parts);
 
         if (ratio === '16:9') baseImage = image;
 
