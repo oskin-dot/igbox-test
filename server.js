@@ -19,14 +19,19 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'CreoGen server running' });
 });
 
-async function callGemini(apiKey, model, parts) {
+async function callGemini(apiKey, model, parts, aspectRatio) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 240000);
 
+  const imageConfig = {};
+  if (aspectRatio) imageConfig.aspectRatio = aspectRatio;
+  if (model === 'gemini-3-pro-image-preview') imageConfig.imageSize = '2K';
+
   const generationConfig = {
     responseModalities: ['IMAGE', 'TEXT'],
     candidateCount: 1,
+    ...(Object.keys(imageConfig).length ? { imageConfig } : {}),
   };
 
   try {
@@ -160,7 +165,7 @@ app.post('/api/generate-all', async (req, res) => {
           ];
         }
 
-        const image = await callGemini(apiKey, selectedModel, parts);
+        const image = await callGemini(apiKey, selectedModel, parts, ratio === '16:9' ? aspectRatio : null);
 
         if (ratio === '16:9') baseImage = image;
 
